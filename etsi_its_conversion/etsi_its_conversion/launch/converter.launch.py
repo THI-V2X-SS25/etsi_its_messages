@@ -30,6 +30,8 @@ def generate_launch_description():
         DeclareLaunchArgument("output_topic_spatem_ts", default_value="~/spatem_ts/out"),
         DeclareLaunchArgument("input_topic_vam_ts", default_value="~/vam_ts/in"),
         DeclareLaunchArgument("output_topic_vam_ts", default_value="~/vam_ts/out"),
+        DeclareLaunchArgument("input_topic_mcm_prima", default_value="~/mcm_prima/in"),
+        DeclareLaunchArgument("output_topic_mcm_prima", default_value="~/mcm_prima/out"),        
     ]
 
     args = [

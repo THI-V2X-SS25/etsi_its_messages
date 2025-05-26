@@ -170,8 +170,8 @@ class Converter : public rclcpp::Node {
     static const std::string kOutputTopicSpatemTs;
     static const std::string kInputTopicVamTs;
     static const std::string kOutputTopicVamTs;
-    static const std::string kInputTopicMcm;
-    static const std::string kOutputTopicMcm;
+    static const std::string kInputTopicMcmThiPrima;
+    static const std::string kOutputTopicMcmThiPrima;
 
     static const std::string kHasBtpDestinationPortParam;
     static const bool kHasBtpDestinationPortParamDefault;
@@ -216,7 +216,7 @@ class Converter : public rclcpp::Node {
     rclcpp::Publisher<mapem_ts_msgs::MAPEM>::SharedPtr publisher_mapem_ts_;
     rclcpp::Publisher<spatem_ts_msgs::SPATEM>::SharedPtr publisher_spatem_ts_;
     rclcpp::Publisher<vam_ts_msgs::VAM>::SharedPtr publisher_vam_ts_;
-    rclcpp::Publisher<mcm_thi_prima_msgs::MCM>::SharedPtr publisher_mcm;
+    rclcpp::Publisher<mcm_thi_prima_msgs::MCM>::SharedPtr publisher_mcm_thi_prima_;
     rclcpp::Publisher<UdpPacket>::SharedPtr publisher_udp_;
 #endif
 

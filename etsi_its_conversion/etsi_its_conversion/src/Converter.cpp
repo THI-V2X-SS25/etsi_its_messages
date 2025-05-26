@@ -53,6 +53,7 @@ const int kBtpHeaderDestinationPortSpatem{2004};
 const int kBtpHeaderDestinationPortIvi{2006};
 const int kBtpHeaderDestinationPortCpmTs{2009};
 const int kBtpHeaderDestinationPortVamTs{2018};
+const int kBtpHeaderDestinationPortMcmThiPrima{2020};  // added for MCM, not according to ETSI TS
 
 #ifdef ROS1
 const std::string Converter::kInputTopicUdp{"udp/in"};
@@ -73,6 +74,8 @@ const std::string Converter::kInputTopicSpatemTs{"spatem_ts/in"};
 const std::string Converter::kOutputTopicSpatemTs{"spatem_ts/out"};
 const std::string Converter::kInputTopicVamTs{"vam_ts/in"};
 const std::string Converter::kOutputTopicVamTs{"vam_ts/out"};
+const std::string Converter::kInputTopicMcmThiPrima{"mcm_thi_prima/in"};
+const std::string Converter::kOutputTopicMcmThiPrima{"mcm_thi_prima/out"};
 #else
 const std::string Converter::kInputTopicUdp{"~/udp/in"};
 const std::string Converter::kOutputTopicUdp{"~/udp/out"};
@@ -92,6 +95,8 @@ const std::string Converter::kInputTopicSpatemTs{"~/spatem_ts/in"};
 const std::string Converter::kOutputTopicSpatemTs{"~/spatem_ts/out"};
 const std::string Converter::kInputTopicVamTs{"~/vam_ts/in"};
 const std::string Converter::kOutputTopicVamTs{"~/vam_ts/out"};
+const std::string Converter::kInputTopicMcmThiPrima{"~/mcm_thi_prima/in"};
+const std::string Converter::kOutputTopicMcmThiPrima{"~/mcm_thi_prima/out"};
 #endif
 
 const std::string Converter::kHasBtpDestinationPortParam{"has_btp_destination_port"};
@@ -102,8 +107,8 @@ const std::string Converter::kEtsiMessagePayloadOffsetParam{"etsi_message_payloa
 const int Converter::kEtsiMessagePayloadOffsetParamDefault{78};
 const std::string Converter::kRos2UdpEtsiTypesParam{"ros2udp_etsi_types"};
 const std::string Converter::kUdp2RosEtsiTypesParam{"udp2ros_etsi_types"};
-const std::vector<std::string> Converter::kRos2UdpEtsiTypesParamDefault{"cam", "cam_ts", "cpm_ts", "denm", "denm_ts", "mapem_ts", "spatem_ts", "vam_ts"};
-const std::vector<std::string> Converter::kUdp2RosEtsiTypesParamDefault{"cam", "cpm_ts", "denm", "mapem_ts", "spatem_ts", "vam_ts"};
+const std::vector<std::string> Converter::kRos2UdpEtsiTypesParamDefault{"cam", "cam_ts", "cpm_ts", "denm", "denm_ts", "mapem_ts", "spatem_ts", "vam_ts", "mcm_thi_prima"};
+const std::vector<std::string> Converter::kUdp2RosEtsiTypesParamDefault{"cam", "cpm_ts", "denm", "mapem_ts", "spatem_ts", "vam_ts", "mcm_thi_prima"};
 const std::string Converter::kSubscriberQueueSizeParam{"subscriber_queue_size"};
 const int Converter::kSubscriberQueueSizeParamDefault{10};
 const std::string Converter::kPublisherQueueSizeParam{"publisher_queue_size"};
@@ -360,6 +365,16 @@ void Converter::setup() {
     subscribers_["vam_ts"] = std::make_shared<ros::Subscriber>(private_node_handle_.subscribe<vam_ts_msgs::VAM>(kInputTopicVamTs, subscriber_queue_size_, callback));
     ROS12_LOG(INFO, "Converting native ROS VAM (TS) on '%s' to UDP messages on '%s'", subscribers_["vam_ts"]->getTopic().c_str(), publisher_udp_->getTopic().c_str());
   }
+  if (std::find(udp2ros_etsi_types_.begin(), udp2ros_etsi_types_.end(), "mcm_thi_prima") != udp2ros_etsi_types_.end()) {
+    publishers_["mcm_thi_prima"] = std::make_shared<ros::Publisher>(private_node_handle_.advertise<mcm_thi_prima_msgs::MCM>(kOutputTopicMcmThiPrima, publisher_queue_size_));
+    ROS12_LOG(INFO, "Converting UDP messages of type MCM on '%s' to native ROS messages on '%s'", subscriber_udp_->getTopic().c_str(), publishers_["mcm_thi_prima"]->getTopic().c_str());
+  }
+  if (std::find(ros2udp_etsi_types_.begin(), ros2udp_etsi_types_.end(), "mcm_thi_prima") != ros2udp_etsi_types_.end()) {
+    boost::function<void(const mcm_thi_prima_msgs::MCM::ConstPtr)> callback =
+      boost::bind(&Converter::rosCallback<mcm_thi_prima_msgs::MCM, asn_MCM_t>, this, _1, "mcm_thi_prima", &asn_DEF_asn_MCM, std::function<void(const mcm_thi_prima_msgs::MCM&, asn_MCM_t&)>(etsi_its_mcm_thi_prima_conversion::toStruct_MCM));
+    subscribers_["mcm_thi_prima"] = std::make_shared<ros::Subscriber>(private_node_handle_.subscribe<mcm_thi_prima_msgs::MCM>(kInputTopicMcmThiPrima, subscriber_queue_size_, callback));
+    ROS12_LOG(INFO, "Converting native ROS MCMs on '%s' to UDP messages on '%s'", subscribers_["mcm_thi_prima"]->getTopic().c_str(), publisher_udp_->getTopic().c_str());
+  }
 #else
   publisher_udp_ = this->create_publisher<UdpPacket>(kOutputTopicUdp, publisher_queue_size_);
   subscriber_udp_ = this->create_subscription<UdpPacket>(kInputTopicUdp, subscriber_queue_size_, std::bind(&Converter::udpCallback, this, std::placeholders::_1));
@@ -442,6 +457,16 @@ void Converter::setup() {
       std::bind(&Converter::rosCallback<vam_ts_msgs::VAM, vam_ts_VAM_t>, this, std::placeholders::_1, "vam_ts", &asn_DEF_vam_ts_VAM, std::function<void(const vam_ts_msgs::VAM&, vam_ts_VAM_t&)>(etsi_its_vam_ts_conversion::toStruct_VAM));
     subscribers_["vam_ts"] = this->create_subscription<vam_ts_msgs::VAM>(kInputTopicVamTs, subscriber_queue_size_, callback);
     ROS12_LOG(INFO, "Converting native ROS VAM (TS) on '%s' to UDP messages on '%s'", subscribers_["vam_ts"]->get_topic_name(), publisher_udp_->get_topic_name());
+  }
+  if (std::find(udp2ros_etsi_types_.begin(), udp2ros_etsi_types_.end(), "mcm_thi_prima") != udp2ros_etsi_types_.end()) {
+    publisher_mcm_thi_prima_ = this->create_publisher<mcm_thi_prima_msgs::MCM>(kOutputTopicMcmThiPrima, publisher_queue_size_);
+    ROS12_LOG(INFO, "Converting UDP messages of type MCM (PRIMA) on '%s' to native ROS messages on '%s'", subscriber_udp_->get_topic_name(), publisher_mcm_thi_prima_->get_topic_name());
+  }
+  if (std::find(ros2udp_etsi_types_.begin(), ros2udp_etsi_types_.end(), "mcm_thi_prima") != ros2udp_etsi_types_.end()) {
+    std::function<void(const mcm_thi_prima_msgs::MCM::UniquePtr)> callback =
+      std::bind(&Converter::rosCallback<mcm_thi_prima_msgs::MCM, asn_MCM_t>, this, std::placeholders::_1, "mcm_thi_prima", &asn_DEF_asn_MCM, std::function<void(const mcm_thi_prima_msgs::MCM&, asn_MCM_t&)>(etsi_its_mcm_thi_prima_conversion::toStruct_MCM));
+    subscribers_["mcm_thi_prima"] = this->create_subscription<mcm_thi_prima_msgs::MCM>(kInputTopicMcmThiPrima, subscriber_queue_size_, callback);
+    ROS12_LOG(INFO, "Converting native ROS MCM (Prima) on '%s' to UDP messages on '%s'", subscribers_["mcm_thi_prima"]->get_topic_name(), publisher_udp_->get_topic_name());
   }
 #endif
 }
@@ -585,6 +610,7 @@ void Converter::udpCallback(const UdpPacket::UniquePtr udp_msg) {
     else if (destination_port == kBtpHeaderDestinationPortMapem) detected_etsi_type = "mapem_ts";
     else if (destination_port == kBtpHeaderDestinationPortSpatem) detected_etsi_type = "spatem_ts";
     else if (destination_port == kBtpHeaderDestinationPortVamTs) detected_etsi_type = "vam_ts";
+    else if (destination_port == kBtpHeaderDestinationPortMcmThiPrima) detected_etsi_type = "mcp_thi_prima";
     else detected_etsi_type = "unknown";
   }
 
@@ -695,7 +721,20 @@ void Converter::udpCallback(const UdpPacket::UniquePtr udp_msg) {
     publisher_spatem_ts_->publish(msg);
   #endif
 
-  } else {
+  } else if (detected_etsi_type == "mcm_thi_prima") {
+
+    // decode buffer to ROS msg
+    mcm_thi_prima_msgs::MCM msg;
+    bool success = this->decodeBufferToRosMessage(&udp_msg->data[etsi_message_payload_offset_], msg_size, &asn_DEF_asn_MCM, std::function<void(const asn_MCM_t&, mcm_thi_prima_msgs::MCM&)>(etsi_its_mcm_thi_prima_conversion::toRos_MCM), msg);
+    if (!success) return;
+
+    // publish msg
+#ifdef ROS1
+    publishers_["mcm_thi_prima"]->publish(msg);
+#else
+    publisher_mcm_thi_prima_->publish(msg);
+#endif
+ } else {
     ROS12_LOG(ERROR, "Detected ETSI message type '%s' not yet supported, dropping message", detected_etsi_type.c_str());
     return;
   }
@@ -721,6 +760,7 @@ void Converter::rosCallback(const typename T_ros::UniquePtr msg,
   else if (type == "mapem_ts") btp_header_destination_port = kBtpHeaderDestinationPortMapem;
   else if (type == "spatem_ts") btp_header_destination_port = kBtpHeaderDestinationPortSpatem;
   else if (type == "vam_ts") btp_header_destination_port = kBtpHeaderDestinationPortVamTs;
+  else if (type == "mcm_thi_prima") btp_header_destination_port = kBtpHeaderDestinationPortMcmThiPrima;
 
   // encode ROS msg to UDP msg
   UdpPacket udp_msg;
