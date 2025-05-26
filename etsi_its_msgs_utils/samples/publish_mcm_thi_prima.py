@@ -35,7 +35,7 @@ class Publisher(Node):
     def __init__(self):
 
         super().__init__("mcm_thi_prima_publisher")
-        topic = "/etsi_its_conversion/mcm_ptima/in"
+        topic = "/etsi_its_conversion/mcm_thi_prima/in"
         self.publisher = self.create_publisher(MCM, topic, 1)
         self.timer = self.create_timer(1.0, self.publish)
 
@@ -53,16 +53,27 @@ class Publisher(Node):
         msg.mcm.mcm_parameters.basic_container_mcm.reference_position.latitude.value = int(1e7 * 48.765922)
         msg.mcm.mcm_parameters.basic_container_mcm.reference_position.longitude.value = int(1e7 * 11.434697)
 
-        intention_sharing_container = IntentionSharingContainer()
+        
+        intention_sharing_container = IntentionSharingContainer()                
         intention_sharing_container.speed.speed_value.value = intention_sharing_container.speed.speed_value.ONE_CENTIMETER_PER_SEC
         intention_sharing_container.speed.speed_confidence.value = intention_sharing_container.speed.speed_confidence.EQUAL_OR_WITHIN_ONE_CENTIMETER_PER_SEC
-        intention_sharing_container.heading.heading_value.value = intention_sharing_container.heading.heading_value.WGS84_NORTH
+        intention_sharing_container.heading.heading_value.value = 0
         intention_sharing_container.heading.heading_confidence.value = intention_sharing_container.heading.heading_confidence.EQUAL_OR_WITHIN_ONE_DEGREE
         intention_sharing_container.vehicle_length.vehicle_length_value.value = intention_sharing_container.vehicle_length.vehicle_length_value.TEN_CENTIMETERS * 42
         intention_sharing_container.vehicle_width.value = intention_sharing_container.vehicle_width.TEN_CENTIMETERS * 18
         intention_sharing_container.vehicle_automation_level.value = intention_sharing_container.vehicle_automation_level.SAE_LEVEL3
-        intention_sharing_container.lane_position_is_present = 0
-                       
+        intention_sharing_container.lane_position_is_present = False
+        
+        #add at least 1 trajactory
+        veh_traj = TrajectoryPointMCM()
+        veh_traj.delta_longitudinal_position.value = 0
+        veh_traj.delta_lateral_position.value = 0
+        veh_traj.delta_heading.value = 0
+        veh_traj.delta_time.value = 1
+        
+        intention_sharing_container.planned_trajectory.array.append(veh_traj)
+        
+        msg.mcm.mcm_parameters.intention_sharing_container = intention_sharing_container
         self.get_logger().info(f"Publishing MCM (PRIMA)")
         self.publisher.publish(msg)
 
