@@ -23,6 +23,7 @@
   <depend>etsi_its_mapem_ts_conversion</depend>
   <depend>etsi_its_spatem_ts_conversion</depend>
   <depend>etsi_its_vam_ts_conversion</depend>
+  <depend>etsi_its_mcm_thi_prima_conversion</depend>
   <depend>ros_environment</depend>
   <depend>std_msgs</depend>
   <depend>udp_msgs</depend>

@@ -36,6 +36,8 @@ SOFTWARE.
 #include <etsi_its_mapem_ts_conversion/convertMAPEM.h>
 #include <etsi_its_spatem_ts_conversion/convertSPATEM.h>
 #include <etsi_its_vam_ts_conversion/convertVAM.h>
+#include <etsi_its_mcm_thi_prima_conversion/convertMCM.h>
+
 #ifdef ROS1
 #include <nodelet/nodelet.h>
 #include <ros/ros.h>
@@ -48,6 +50,7 @@ SOFTWARE.
 #include <etsi_its_mapem_ts_msgs/MAPEM.h>
 #include <etsi_its_spatem_ts_msgs/SPATEM.h>
 #include <etsi_its_vam_ts_msgs/VAM.h>
+#include <etsi_its_mcm_thi_prima_msgs/MCM.h>
 #else
 #include <etsi_its_cam_msgs/msg/cam.hpp>
 #include <etsi_its_cam_ts_msgs/msg/cam.hpp>
@@ -57,6 +60,7 @@ SOFTWARE.
 #include <etsi_its_mapem_ts_msgs/msg/mapem.hpp>
 #include <etsi_its_spatem_ts_msgs/msg/spatem.hpp>
 #include <etsi_its_vam_ts_msgs/msg/vam.hpp>
+#include <etsi_its_mcm_thi_prima_msgs/msg/mcm.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <udp_msgs/msg/udp_packet.hpp>
 #endif
@@ -75,6 +79,7 @@ namespace denm_ts_msgs = etsi_its_denm_ts_msgs;
 namespace mapem_ts_msgs = etsi_its_mapem_ts_msgs;
 namespace spatem_ts_msgs = etsi_its_spatem_ts_msgs;
 namespace vam_ts_msgs = etsi_its_vam_ts_msgs;
+namespace mcm_prima_msgs = etsi_its_mcm_thi_prima_msgs;
 #else
 using namespace udp_msgs::msg;
 namespace cam_msgs = etsi_its_cam_msgs::msg;
@@ -85,6 +90,7 @@ namespace denm_ts_msgs = etsi_its_denm_ts_msgs::msg;
 namespace mapem_ts_msgs = etsi_its_mapem_ts_msgs::msg;
 namespace spatem_ts_msgs = etsi_its_spatem_ts_msgs::msg;
 namespace vam_ts_msgs = etsi_its_vam_ts_msgs::msg;
+namespace mcm_prima_msgs = etsi_its_mcm_thi_prima_msgs;
 #endif
 
 
@@ -164,6 +170,8 @@ class Converter : public rclcpp::Node {
     static const std::string kOutputTopicSpatemTs;
     static const std::string kInputTopicVamTs;
     static const std::string kOutputTopicVamTs;
+    static const std::string kInputTopicMcm;
+    static const std::string kOutputTopicMcm;
 
     static const std::string kHasBtpDestinationPortParam;
     static const bool kHasBtpDestinationPortParamDefault;
@@ -208,6 +216,7 @@ class Converter : public rclcpp::Node {
     rclcpp::Publisher<mapem_ts_msgs::MAPEM>::SharedPtr publisher_mapem_ts_;
     rclcpp::Publisher<spatem_ts_msgs::SPATEM>::SharedPtr publisher_spatem_ts_;
     rclcpp::Publisher<vam_ts_msgs::VAM>::SharedPtr publisher_vam_ts_;
+    rclcpp::Publisher<mcm_thi_prima_msgs::MCM>::SharedPtr publisher_mcm;
     rclcpp::Publisher<UdpPacket>::SharedPtr publisher_udp_;
 #endif
 
