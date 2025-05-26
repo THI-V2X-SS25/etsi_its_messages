@@ -23,14 +23,14 @@ if(${ROS_VERSION} EQUAL 2)
 
   target_link_libraries(${PROJECT_NAME} INTERFACE
     ${etsi_its_mcm_thi_prima_coding_TARGETS}
-    ${tsi_its_mcm_thi_prima_msgs_TARGETS}
+    ${etsi_its_mcm_thi_prima_msgs_TARGETS}
     ${etsi_its_primitives_conversion_TARGETS}
   )
 
   ament_export_targets(${PROJECT_NAME}Targets HAS_LIBRARY_TARGET)
   ament_export_dependencies(
     etsi_its_mcm_thi_prima_coding
-    tsi_its_mcm_thi_prima_msgs
+    etsi_its_mcm_thi_prima_msgs
     etsi_its_primitives_conversion
   )
 
