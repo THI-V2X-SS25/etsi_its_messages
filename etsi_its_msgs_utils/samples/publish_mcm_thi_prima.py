@@ -35,7 +35,7 @@ class Publisher(Node):
     def __init__(self):
 
         super().__init__("mcm_thi_prima_publisher")
-        topic = "/etsi_its_conversion/mcm_thi_prima/in"
+        topic = "mcm_received"
         self.publisher = self.create_publisher(MCM, topic, 1)
         self.timer = self.create_timer(1.0, self.publish)
 
