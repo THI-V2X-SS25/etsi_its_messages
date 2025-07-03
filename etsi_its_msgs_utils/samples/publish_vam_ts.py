@@ -50,7 +50,8 @@ class Publisher(Node):
         msg.vam.generation_delta_time.value = int(utils.get_t_its(self.get_clock().now().nanoseconds) % 65536)
 
         msg.vam.vam_parameters.basic_container.station_type.value = msg.vam.vam_parameters.basic_container.station_type.PEDESTRIAN
-        msg.vam.vam_parameters.basic_container.reference_position.latitude.value = int(1e7 * 51.215169611787054)
+        msg.vam.vam_parameters.basic_container.reference_position.latitude.value = int(1e7 * 48.765922)
+        msg.vam.vam_parameters.basic_container.reference_position.longitude.value = int(1e7 * 11.434697)
 
         vru_high_frequency_container = VruHighFrequencyContainer()
         vru_high_frequency_container.speed.speed_value.value = 1
