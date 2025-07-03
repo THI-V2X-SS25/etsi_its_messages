@@ -381,6 +381,7 @@ void Converter::setup() {
   if (std::find(udp2ros_etsi_types_.begin(), udp2ros_etsi_types_.end(), "cam") != udp2ros_etsi_types_.end()) {
     publisher_cam_ = this->create_publisher<cam_msgs::CAM>(kOutputTopicCam, publisher_queue_size_);
     ROS12_LOG(INFO, "Converting UDP messages of type CAM on '%s' to native ROS messages on '%s'", subscriber_udp_->get_topic_name(), publisher_cam_->get_topic_name());
+    RCLCPP_INFO(this->get_logger(), "btp_offset: %d", btp_destination_port_offset_);
   }
   if (std::find(ros2udp_etsi_types_.begin(), ros2udp_etsi_types_.end(), "cam") != ros2udp_etsi_types_.end()) {
     std::function<void(const cam_msgs::CAM::UniquePtr)> callback =
@@ -610,7 +611,7 @@ void Converter::udpCallback(const UdpPacket::UniquePtr udp_msg) {
     else if (destination_port == kBtpHeaderDestinationPortMapem) detected_etsi_type = "mapem_ts";
     else if (destination_port == kBtpHeaderDestinationPortSpatem) detected_etsi_type = "spatem_ts";
     else if (destination_port == kBtpHeaderDestinationPortVamTs) detected_etsi_type = "vam_ts";
-    else if (destination_port == kBtpHeaderDestinationPortMcmThiPrima) detected_etsi_type = "mcp_thi_prima";
+    else if (destination_port == kBtpHeaderDestinationPortMcmThiPrima) detected_etsi_type = "mcm_thi_prima";
     else detected_etsi_type = "unknown";
   }
 
